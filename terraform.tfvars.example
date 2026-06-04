@@ -1,0 +1,64 @@
+# Example terraform.tfvars configuration
+# Copy this file to terraform.tfvars and modify values accordingly.
+
+# CIDR block for the VPC
+cidr_vpc = "10.0.0.0/16"
+
+# Map of subnet configurations
+cidr_subnet = {
+  "public_subnet_1" = {
+    cidr_block = "10.0.1.0/24"
+    tier       = "public"
+    az         = "ap-southeast-1a"
+  }
+
+  "public_subnet_2" = {
+    cidr_block = "10.0.3.0/24"
+    tier       = "public"
+    az         = "ap-southeast-1b"
+  }
+
+  "private_subnet_1" = {
+    cidr_block = "10.0.2.0/24"
+    tier       = "private"
+    az         = "ap-southeast-1b"
+  }
+}
+
+# Tags for the VPC
+tags_vpc = {
+  "Name"        = "DemoVPC"
+  "Environment" = "Dev"
+  "Author"      = "DevOps-Engineer"
+}
+
+# Tags for the Internet Gateway
+tags_igw = {
+  "Name"        = "IGWDemo"
+  "Environment" = "Dev"
+  "Author"      = "DevOps-Engineer"
+}
+
+# Tags for the Route Table
+tags_rt = {
+  "Name"        = "RTDemoPublic"
+  "Environment" = "Dev"
+  "Author"      = "DevOps-Engineer"
+}
+
+# Security group names
+name_sg_alb = "SG_ALB_Demo"
+name_sg_ec2 = "SG_EC2_Demo"
+
+# Tags for the EC2 Instance
+tags_ec2 = {
+  "Name"        = "EC2Demo"
+  "Environment" = "Dev"
+  "Author"      = "DevOps-Engineer"
+}
+
+# Default tags for subnets
+tag_subnet = {
+  "Environment" = "Dev"
+  "Author"      = "DevOps-Engineer"
+}
