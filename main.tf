@@ -32,9 +32,26 @@ provider "local" {
 
 }
 
+/*
 provider "kubernetes" {
   config_path = "${path.module}/kubeconfig.yaml"
 }
+*/
+
+provider "kubernetes" {
+    host                   = yamldecode(data.local_file.kubeconfig.content).clusters[0].cluster.server
+    client_certificate     = base64decode(yamldecode(data.local_file.kubeconfig.content).users[0].user.client-certificate-data)
+    client_key             = base64decode(yamldecode(data.local_file.kubeconfig.content).users[0].user.client-key-data)
+    cluster_ca_certificate = base64decode(yamldecode(data.local_file.kubeconfig.content).clusters[0].cluster.certificate-authority-data)
+  }
+
+data "local_file" "kubeconfig" {
+  filename   = "${path.module}/kubeconfig.yaml"
+  depends_on = [null_resource.fetch_and_patch_kubeconfig]
+}
+
+
+
 
 # 3. K8s Resource: Tạo Deployment Nginx và sửa file index chứa chữ "Hello Xbrain"
 resource "kubernetes_deployment_v1" "nginx_app" {
@@ -99,6 +116,7 @@ resource "kubernetes_deployment_v1" "nginx_app" {
     }
   }
 }
+
 
 
 resource "kubernetes_service_v1" "nginx_service" {
@@ -195,12 +213,15 @@ resource "null_resource" "fetch_and_patch_kubeconfig" {
 
     ]
   }
-
+/*
   provisioner "local-exec" {
     command     = "icacls ${local_file.private_key.filename} /inheritance:r /grant:r \"$($env:USERNAME):(R)\""
     interpreter = ["PowerShell", "-Command"]
   }
-
+*/
+  provisioner "local-exec" {
+    command = "chmod 400 ${local_file.private_key.filename}"
+  }
 
   # --- HÀNH ĐỘNG 2: KÉO FILE VỀ (Chạy trên Laptop của bạn) ---
   provisioner "local-exec" {
@@ -210,11 +231,16 @@ resource "null_resource" "fetch_and_patch_kubeconfig" {
 
   # --- HÀNH ĐỘNG 3: SỬA IP (Chạy trên Laptop của bạn) ---
   # Dùng PowerShell để đọc file, tìm chuỗi "127.0.0.1" và thay bằng Public IP, sau đó lưu lại
+  /*
   provisioner "local-exec" {
       command     = "(Get-Content ${path.module}/kubeconfig.yaml) -replace 'https://[0-9\\.]+:8443', 'https://${module.aws_ec2.public_ip}:8443' | Set-Content ${path.module}/kubeconfig.yaml"
       interpreter = ["PowerShell", "-Command"]
     }
-
+*/
+# --- HÀNH ĐỘNG 3: SỬA IP (Chạy trên máy Linux của bạn) ---
+  provisioner "local-exec" {
+    command = "sed -i 's|https://[0-9\\.]\\+:8443|https://${module.aws_ec2.public_ip}:8443|g' ${path.module}/kubeconfig.yaml"
+  }  
 }
 
 
